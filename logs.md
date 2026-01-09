@@ -183,3 +183,14 @@
 - Created `DEPLOYMENT.md` with deployment instructions
 - Updated `package.json` with vercel-build script and Node.js engine requirement
 - Application ready for Vercel deployment with hardcoded data (no database required)
+
+## Netlify Deployment Fix
+- Created Netlify-compatible serverless functions in `netlify/functions/`:
+  - `login.js` - User authentication with CORS support
+  - `grade-report.js` - Grade report data endpoint with CORS support
+  - `data.js` - Shared hardcoded data for both accounts
+- Created `netlify.toml` configuration file for proper API routing
+- Updated `app.js` error handling to properly handle empty responses and JSON parsing errors
+- Added CORS headers to all Netlify functions to allow cross-origin requests
+- Fixed API response parsing to handle edge cases (empty responses, invalid JSON)
+- Application now works on both Netlify and Vercel deployments

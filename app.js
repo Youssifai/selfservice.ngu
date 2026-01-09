@@ -1,4 +1,4 @@
-// API Configuration - works for both local development and Vercel deployment
+// API Configuration - works for both local development and Netlify/Vercel deployment
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:3000/api' 
     : '/api';
@@ -133,11 +133,22 @@ async function login(username, password) {
         });
         
         if (!response.ok) {
-            const error = await response.json();
+            const text = await response.text();
+            let error;
+            try {
+                error = JSON.parse(text);
+            } catch {
+                error = { error: `Login failed: ${response.statusText}` };
+            }
             throw new Error(error.error || 'Login failed');
         }
         
-        return await response.json();
+        const text = await response.text();
+        if (!text) {
+            throw new Error('Login failed: Empty response from server');
+        }
+        
+        return JSON.parse(text);
     } catch (error) {
         console.error('Error logging in:', error);
         throw error;
@@ -153,9 +164,22 @@ async function fetchGradeReport(academicYear, academicTerm) {
     try {
         const response = await fetch(`${API_BASE_URL}/grade-report?academicYear=${academicYear}&academicTerm=${academicTerm}&userId=${state.userId}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch grade report');
+            const text = await response.text();
+            let error;
+            try {
+                error = JSON.parse(text);
+            } catch {
+                error = { error: `Failed to fetch grade report: ${response.statusText}` };
+            }
+            throw new Error(error.error || 'Failed to fetch grade report');
         }
-        return await response.json();
+        
+        const text = await response.text();
+        if (!text) {
+            throw new Error('Failed to fetch grade report: Empty response from server');
+        }
+        
+        return JSON.parse(text);
     } catch (error) {
         console.error('Error fetching grade report:', error);
         return null;
