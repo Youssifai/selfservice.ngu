@@ -2,7 +2,6 @@
   "name": "fake-marks",
   "version": "1.0.0",
   "description": "Ellucian PowerCampus Self-Service Grade Report System",
-  "main": "server.js",
   "engines": {
     "node": ">=18.x"
   },

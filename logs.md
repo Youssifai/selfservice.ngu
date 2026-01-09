@@ -200,3 +200,9 @@
 - Optimized static file serving in [...path].js catch-all route
 - Tested locally: server starts correctly, API endpoints respond properly, static files serve correctly
 - Application is now production-ready for Vercel deployment
+
+## Vercel Build Configuration Fix
+- Removed "main": "server.js" from package.json to prevent Vercel from detecting wrong entrypoint
+- Added explicit builds configuration in vercel.json using @vercel/node builder for api/index.js and api/[...path].js
+- Configured vercel.json version 2 with proper builds and rewrites
+- Fixed "No entrypoint found which imports express" error by explicitly telling Vercel where Express app is located
