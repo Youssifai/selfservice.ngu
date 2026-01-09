@@ -4,10 +4,12 @@ database.db
 
 # Development files
 server.js
-app.js
-index.html
-styles.css
 node_modules/
+
+# Root-level frontend files (use public/ folder instead)
+/app.js
+/index.html
+/styles.css
 
 # Logs
 *.log
