@@ -2,20 +2,26 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// Debug middleware - log all API requests
-app.use((req, res, next) => {
-    console.log('=== API Request Debug ===');
-    console.log('Method:', req.method);
-    console.log('URL:', req.url);
-    console.log('Path:', req.path);
-    console.log('Original URL:', req.originalUrl);
-    console.log('Query:', req.query);
-    console.log('Body:', req.body);
-    next();
-});
+// CORS configuration for production
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+        ? true // Allow all origins in production (or specify your domain)
+        : true,
+    credentials: true
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Production logging - only log errors
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        console.log(`${req.method} ${req.path}`);
+        next();
+    });
+}
 
 // Hardcoded user data
 const users = {
@@ -158,66 +164,76 @@ function getAvailableYearsTerms(studentId) {
 
 // Login endpoint
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password are required' });
-    }
-
-    const user = users[username];
-    
-    if (!user || user.password !== password) {
-        return res.status(401).json({ error: 'Invalid username or password' });
-    }
-
-    res.json({
-        success: true,
-        username: user.username,
-        userId: user.id,
-        studentId: user.student.id,
-        studentInfo: {
-            name: user.student.name,
-            degree: user.student.degree,
-            curriculum: user.student.curriculum,
-            peopleId: user.student.peopleId
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
         }
-    });
+
+        const user = users[username];
+        
+        if (!user || user.password !== password) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        res.json({
+            success: true,
+            username: user.username,
+            userId: user.id,
+            studentId: user.student.id,
+            studentInfo: {
+                name: user.student.name,
+                degree: user.student.degree,
+                curriculum: user.student.curriculum,
+                peopleId: user.student.peopleId
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // Get grade report data
 app.get('/grade-report', (req, res) => {
-    const { academicYear, academicTerm, userId } = req.query;
+    try {
+        const { academicYear, academicTerm, userId } = req.query;
 
-    if (!academicYear || !academicTerm) {
-        return res.status(400).json({ error: 'academicYear and academicTerm are required' });
+        if (!academicYear || !academicTerm) {
+            return res.status(400).json({ error: 'academicYear and academicTerm are required' });
+        }
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User authentication required' });
+        }
+
+        const user = Object.values(users).find(u => u.id === parseInt(userId));
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const studentData = gradeData[user.student.id];
+        if (!studentData || !studentData[academicYear] || !studentData[academicYear][academicTerm]) {
+            return res.status(404).json({ error: 'Grade data not found' });
+        }
+
+        const termData = studentData[academicYear][academicTerm];
+
+        res.json({
+            studentInfo: {
+                name: user.student.name,
+                degree: user.student.degree,
+                curriculum: user.student.curriculum,
+                peopleId: user.student.peopleId
+            },
+            courses: termData.courses,
+            finalGrades: termData.finalGrades
+        });
+    } catch (error) {
+        console.error('Grade report error:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    if (!userId) {
-        return res.status(401).json({ error: 'User authentication required' });
-    }
-
-    const user = Object.values(users).find(u => u.id === parseInt(userId));
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-    }
-
-    const studentData = gradeData[user.student.id];
-    if (!studentData || !studentData[academicYear] || !studentData[academicYear][academicTerm]) {
-        return res.status(404).json({ error: 'Grade data not found' });
-    }
-
-    const termData = studentData[academicYear][academicTerm];
-
-    res.json({
-        studentInfo: {
-            name: user.student.name,
-            degree: user.student.degree,
-            curriculum: user.student.curriculum,
-            peopleId: user.student.peopleId
-        },
-        courses: termData.courses,
-        finalGrades: termData.finalGrades
-    });
 });
 
 // Add/Update course (stub - data is read-only)
@@ -232,19 +248,24 @@ app.post('/final-grades', (req, res) => {
 
 // Get all available years and terms
 app.get('/years-terms', (req, res) => {
-    const { userId } = req.query;
-    
-    if (!userId) {
-        return res.status(401).json({ error: 'User authentication required' });
-    }
+    try {
+        const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(401).json({ error: 'User authentication required' });
+        }
 
-    const user = Object.values(users).find(u => u.id === parseInt(userId));
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-    }
+        const user = Object.values(users).find(u => u.id === parseInt(userId));
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-    const yearsTerms = getAvailableYearsTerms(user.student.id);
-    res.json(yearsTerms);
+        const yearsTerms = getAvailableYearsTerms(user.student.id);
+        res.json(yearsTerms);
+    } catch (error) {
+        console.error('Years-terms error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // Export for Vercel

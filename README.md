@@ -1,13 +1,13 @@
 # Ellucian PowerCampus Self-Service Grade Report System
 
-A web application for viewing and managing student grade reports with database integration.
+A web application for viewing and managing student grade reports, deployed on Vercel.
 
 ## Features
 
 - Student authentication flow (Sign in → Welcome → Dashboard)
 - Grade report viewing with filtering by academic year and term
-- Database-backed course and grade management
 - RESTful API for data operations
+- Production-ready Vercel deployment
 
 ## Setup
 
@@ -34,15 +34,28 @@ The server will start on `http://localhost:3000`
 - Open `index.html` in your browser, or
 - Navigate to `http://localhost:3000` if serving through the server
 
-## Database
+## Deployment
 
-The application uses SQLite database (`database.db`) with the following tables:
+This application is configured for deployment on Vercel. The application uses hardcoded data optimized for serverless functions.
 
-- **students**: Student information (name, degree, curriculum, people_id)
-- **courses**: Course records (session, course code, name, section, credits, quality points)
-- **final_grades**: Final grade scores (SBA, OSPE, etc.)
+### Deploying to Vercel
 
-The database is automatically initialized on first server start with sample data.
+1. Install Vercel CLI (if not already installed):
+```bash
+npm i -g vercel
+```
+
+2. Deploy:
+```bash
+vercel
+```
+
+Or connect your GitHub repository to Vercel for automatic deployments.
+
+### Test Accounts
+
+- **Username**: `youssef.aly.2023` / **Password**: `Sophy2005`
+- **Username**: `tarnim.ahmed.2023` / **Password**: `Radwan23`
 
 ## API Endpoints
 
@@ -107,13 +120,16 @@ Get all available academic years and terms from the database.
 
 ```
 .
+├── api/
+│   ├── index.js        # API endpoints (Vercel serverless function)
+│   └── [...path].js    # Catch-all route for static files
 ├── app.js              # Frontend application logic
-├── server.js           # Backend server and API
+├── server.js           # Local development server
 ├── index.html          # Main HTML file
 ├── styles.css          # Stylesheet
 ├── package.json        # Node.js dependencies
-├── database.db         # SQLite database (created on first run)
-└── logs.md            # Development log
+├── vercel.json         # Vercel configuration
+└── logs.md             # Development log
 ```
 
 ## Usage
@@ -128,12 +144,13 @@ Get all available academic years and terms from the database.
 
 The application uses:
 - **Frontend**: Vanilla JavaScript (ES6+)
-- **Backend**: Node.js with Express
-- **Database**: SQLite3
+- **Backend**: Node.js with Express (serverless functions on Vercel)
 - **Styling**: CSS3
+- **Deployment**: Vercel
 
 ## Notes
 
-- The database is automatically seeded with sample data on first run
-- The application falls back to hardcoded data if the API is unavailable
-- All API calls include error handling with fallback mechanisms
+- The application uses hardcoded data optimized for Vercel serverless functions
+- All API calls include proper error handling
+- Production-ready with security headers and optimized caching
+- Local development server available via `npm start`
