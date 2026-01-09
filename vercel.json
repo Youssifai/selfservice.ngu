@@ -5,15 +5,12 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/",
+      "destination": "/api/[...path].js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/[...path].js"
     }
-  ],
-  "functions": {
-    "api/[...path].js": {
-      "includeFiles": "**/*.html",
-      "includeFiles": "**/*.css",
-      "includeFiles": "**/*.js"
-    }
-  }
+  ]
 }

@@ -1,7 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 app.use(cors());
@@ -16,7 +14,6 @@ app.use((req, res, next) => {
     console.log('Original URL:', req.originalUrl);
     console.log('Query:', req.query);
     console.log('Body:', req.body);
-    console.log('Current working directory:', process.cwd());
     next();
 });
 
