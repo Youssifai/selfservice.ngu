@@ -208,8 +208,8 @@
 - Fixed "No entrypoint found which imports express" error by explicitly telling Vercel where Express app is located
 
 ## Blank Page Fix
-- Updated catch-all route (api/[...path].js) to properly serve static files (index.html, app.js, styles.css)
-- Improved path resolution to handle Vercel serverless environment correctly
-- Added support for serving both static files and SPA routing fallback
-- Enhanced error handling and logging for debugging file serving issues
-- Configured rewrites to route all non-API requests through catch-all for static file serving
+- Moved static files (index.html, app.js, styles.css) to public/ folder for Vercel's automatic static file serving
+- Removed catch-all serverless function (api/[...path].js) since public folder handles static files natively
+- Updated vercel.json to use simple rewrite rule: all non-API routes serve index.html from public folder
+- Vercel automatically serves files from public/ folder, eliminating need for serverless function file serving
+- This is the recommended Vercel approach for static files and SPA routing
