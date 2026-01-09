@@ -235,5 +235,7 @@ app.get('/years-terms', (req, res) => {
     res.json(yearsTerms);
 });
 
-// Export for Vercel
-module.exports = app;
+// Export for Vercel - wrap Express app in handler
+module.exports = (req, res) => {
+    return app(req, res);
+};
