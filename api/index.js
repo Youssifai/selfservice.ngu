@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
@@ -235,7 +237,5 @@ app.get('/years-terms', (req, res) => {
     res.json(yearsTerms);
 });
 
-// Export for Vercel - wrap Express app in handler
-module.exports = (req, res) => {
-    return app(req, res);
-};
+// Export for Vercel
+module.exports = app;
