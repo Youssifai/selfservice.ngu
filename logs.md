@@ -206,3 +206,10 @@
 - Added explicit builds configuration in vercel.json using @vercel/node builder for api/index.js and api/[...path].js
 - Configured vercel.json version 2 with proper builds and rewrites
 - Fixed "No entrypoint found which imports express" error by explicitly telling Vercel where Express app is located
+
+## Blank Page Fix
+- Updated catch-all route (api/[...path].js) to properly serve static files (index.html, app.js, styles.css)
+- Improved path resolution to handle Vercel serverless environment correctly
+- Added support for serving both static files and SPA routing fallback
+- Enhanced error handling and logging for debugging file serving issues
+- Configured rewrites to route all non-API requests through catch-all for static file serving

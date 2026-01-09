@@ -1,75 +1,56 @@
-// Serve static files for all non-API routes
+// Serve static files and handle SPA routing
 const fs = require('fs');
 const path = require('path');
 
 module.exports = async (req, res) => {
     try {
-        // In Vercel, catch-all routes receive path as req.query.path (array)
-        let urlPath;
-        if (req.query.path === undefined || req.query.path === null) {
-            urlPath = '/';
-        } else if (Array.isArray(req.query.path)) {
-            urlPath = req.query.path.length === 0 ? '/' : '/' + req.query.path.join('/');
-        } else if (typeof req.query.path === 'string') {
-            urlPath = '/' + req.query.path;
-        } else {
-            urlPath = req.url.split('?')[0] || '/';
+        // Get the requested path
+        let urlPath = req.url.split('?')[0] || '/';
+        
+        if (req.query.path !== undefined && req.query.path !== null) {
+            if (Array.isArray(req.query.path)) {
+                urlPath = req.query.path.length === 0 ? '/' : '/' + req.query.path.join('/');
+            } else if (typeof req.query.path === 'string') {
+                urlPath = '/' + req.query.path;
+            }
         }
         
-        // Ensure it starts with /
+        // Normalize path
         if (!urlPath.startsWith('/')) {
             urlPath = '/' + urlPath;
         }
         
-        // For root, serve index.html
-        const cleanPath = (urlPath === '/' || urlPath === '') ? 'index.html' : urlPath.replace(/^\//, '');
-        
         // Don't serve API routes
-        if (cleanPath.startsWith('api/')) {
+        if (urlPath.startsWith('/api/')) {
             return res.status(404).json({ error: 'Not found' });
         }
         
-        // In Vercel, files are in the project root, but we need to go up from api/
-        const baseDir = path.join(__dirname, '..');
+        // Determine file to serve
+        let cleanPath = urlPath === '/' ? 'index.html' : urlPath.replace(/^\//, '');
         
-        // Determine file path
-        let filePath;
-        if (cleanPath === 'index.html' || urlPath === '/') {
-            filePath = path.join(baseDir, 'index.html');
-        } else {
-            filePath = path.join(baseDir, cleanPath);
-        }
+        // In Vercel, the project root is one level up from the api folder
+        const baseDir = path.resolve(__dirname, '..');
         
-        // Check if file exists
-        const fileExists = fs.existsSync(filePath);
+        // Try to serve the requested file first (for static assets like CSS, JS)
+        let filePath = path.join(baseDir, cleanPath);
         
-        // If file doesn't exist, fall back to index.html for SPA routing
-        if (!fileExists) {
-            filePath = path.join(baseDir, 'index.html');
-        }
-        
-        // Final check - if still no file, return 404
+        // If file doesn't exist and it's not a root request, try to serve it as a static file
         if (!fs.existsSync(filePath)) {
-            if (process.env.NODE_ENV !== 'production') {
-                console.error('File not found:', filePath);
-            }
+            // For SPA routing, always fall back to index.html
+            filePath = path.join(baseDir, 'index.html');
+        }
+        
+        // Final check
+        if (!fs.existsSync(filePath)) {
+            console.error('File not found:', filePath);
+            console.error('Base dir:', baseDir);
+            console.error('Request URL:', req.url);
             return res.status(404).json({ error: 'Not found' });
         }
         
         const ext = path.extname(filePath);
         
-        // Check if it's a binary file
-        if (ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif' || ext === '.svg' || ext === '.ico') {
-            const binaryContent = fs.readFileSync(filePath);
-            const contentType = ext === '.svg' ? 'image/svg+xml' : `image/${ext.slice(1)}`;
-            res.setHeader('Content-Type', contentType);
-            res.send(binaryContent);
-            return;
-        }
-        
-        const content = fs.readFileSync(filePath, 'utf8');
-        
-        // Set content type
+        // Determine content type
         let contentType = 'text/html';
         if (ext === '.css') {
             contentType = 'text/css';
@@ -77,12 +58,27 @@ module.exports = async (req, res) => {
             contentType = 'application/javascript';
         } else if (ext === '.json') {
             contentType = 'application/json';
+        } else if (ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif') {
+            contentType = `image/${ext.slice(1)}`;
+        } else if (ext === '.svg') {
+            contentType = 'image/svg+xml';
+        } else if (ext === '.ico') {
+            contentType = 'image/x-icon';
         }
         
-        res.setHeader('Content-Type', contentType);
-        res.send(content);
+        // Read and serve file
+        if (contentType.startsWith('image/') && ext !== '.svg') {
+            const content = fs.readFileSync(filePath);
+            res.setHeader('Content-Type', contentType);
+            res.send(content);
+        } else {
+            const content = fs.readFileSync(filePath, 'utf8');
+            res.setHeader('Content-Type', contentType);
+            res.send(content);
+        }
     } catch (error) {
         console.error('Error serving file:', error.message);
+        console.error('Stack:', error.stack);
         res.status(500).json({ 
             error: 'Internal server error',
             ...(process.env.NODE_ENV !== 'production' && { message: error.message })
