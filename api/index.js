@@ -7,6 +7,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Debug middleware - log all API requests
+app.use((req, res, next) => {
+    console.log('=== API Request Debug ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Path:', req.path);
+    console.log('Original URL:', req.originalUrl);
+    console.log('Query:', req.query);
+    console.log('Body:', req.body);
+    console.log('Current working directory:', process.cwd());
+    next();
+});
+
 // Hardcoded user data
 const users = {
     'youssef.aly.2023': {
