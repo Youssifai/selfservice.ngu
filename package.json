@@ -2,18 +2,21 @@
   "name": "fake-marks",
   "version": "1.0.0",
   "description": "Ellucian PowerCampus Self-Service Grade Report System",
-  "engines": {
-    "node": ">=18.x"
-  },
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "vercel-build": "echo 'No build step required'"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
     "cors": "^2.8.5"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.x"
+  }
 }

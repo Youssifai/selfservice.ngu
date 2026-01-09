@@ -1,29 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+// Shared hardcoded data for all API endpoints
 
-const app = express();
-
-// CORS configuration for production
-const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
-        ? true // Allow all origins in production (or specify your domain)
-        : true,
-    credentials: true
-};
-
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Production logging - only log errors
-if (process.env.NODE_ENV !== 'production') {
-    app.use((req, res, next) => {
-        console.log(`${req.method} ${req.path}`);
-        next();
-    });
-}
-
-// Hardcoded user data
 const users = {
     'youssef.aly.2023': {
         id: 1,
@@ -51,7 +27,6 @@ const users = {
     }
 };
 
-// Hardcoded grade data
 const gradeData = {
     1: { // Youssef Aly
         '2024': {
@@ -143,130 +118,4 @@ const gradeData = {
     }
 };
 
-// Get available years and terms for a student
-function getAvailableYearsTerms(studentId) {
-    const data = gradeData[studentId];
-    if (!data) return [];
-    
-    const yearsTerms = [];
-    for (const year in data) {
-        for (const term in data[year]) {
-            yearsTerms.push({ academic_year: year, academic_term: term });
-        }
-    }
-    return yearsTerms.sort((a, b) => {
-        if (a.academic_year !== b.academic_year) {
-            return b.academic_year.localeCompare(a.academic_year);
-        }
-        return b.academic_term.localeCompare(a.academic_term);
-    });
-}
-
-// Login endpoint
-app.post('/login', (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password are required' });
-        }
-
-        const user = users[username];
-        
-        if (!user || user.password !== password) {
-            return res.status(401).json({ error: 'Invalid username or password' });
-        }
-
-        res.json({
-            success: true,
-            username: user.username,
-            userId: user.id,
-            studentId: user.student.id,
-            studentInfo: {
-                name: user.student.name,
-                degree: user.student.degree,
-                curriculum: user.student.curriculum,
-                peopleId: user.student.peopleId
-            }
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Get grade report data
-app.get('/grade-report', (req, res) => {
-    try {
-        const { academicYear, academicTerm, userId } = req.query;
-
-        if (!academicYear || !academicTerm) {
-            return res.status(400).json({ error: 'academicYear and academicTerm are required' });
-        }
-
-        if (!userId) {
-            return res.status(401).json({ error: 'User authentication required' });
-        }
-
-        const user = Object.values(users).find(u => u.id === parseInt(userId));
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const studentData = gradeData[user.student.id];
-        if (!studentData || !studentData[academicYear] || !studentData[academicYear][academicTerm]) {
-            return res.status(404).json({ error: 'Grade data not found' });
-        }
-
-        const termData = studentData[academicYear][academicTerm];
-
-        res.json({
-            studentInfo: {
-                name: user.student.name,
-                degree: user.student.degree,
-                curriculum: user.student.curriculum,
-                peopleId: user.student.peopleId
-            },
-            courses: termData.courses,
-            finalGrades: termData.finalGrades
-        });
-    } catch (error) {
-        console.error('Grade report error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Add/Update course (stub - data is read-only)
-app.post('/courses', (req, res) => {
-    res.json({ message: 'Data is read-only in this deployment' });
-});
-
-// Add/Update final grade (stub - data is read-only)
-app.post('/final-grades', (req, res) => {
-    res.json({ message: 'Data is read-only in this deployment' });
-});
-
-// Get all available years and terms
-app.get('/years-terms', (req, res) => {
-    try {
-        const { userId } = req.query;
-        
-        if (!userId) {
-            return res.status(401).json({ error: 'User authentication required' });
-        }
-
-        const user = Object.values(users).find(u => u.id === parseInt(userId));
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const yearsTerms = getAvailableYearsTerms(user.student.id);
-        res.json(yearsTerms);
-    } catch (error) {
-        console.error('Years-terms error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Export for Vercel
-module.exports = app;
+module.exports = { users, gradeData };

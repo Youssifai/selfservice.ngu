@@ -1,27 +1,18 @@
-# Database files
 database.db
 *.db
-
-# Development server only
 server.js
 node_modules/
-
-# Logs
 *.log
 npm-debug.log*
-
-# Environment files
 .env
 .env.local
 .env.*.local
-
-# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS files
 .DS_Store
 Thumbs.db
+logs.md
+DEPLOYMENT.md
