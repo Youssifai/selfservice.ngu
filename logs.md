@@ -213,3 +213,11 @@
 - Updated vercel.json to use simple rewrite rule: all non-API routes serve index.html from public folder
 - Vercel automatically serves files from public/ folder, eliminating need for serverless function file serving
 - This is the recommended Vercel approach for static files and SPA routing
+
+## Final Vercel Deployment Success
+- Added root-level files (app.js, index.html, styles.css) to .vercelignore to prevent Vercel from detecting wrong entrypoint
+- Fixed "No entrypoint found which imports express" error by excluding frontend files from build detection
+- Website now successfully deploys and works on Vercel, displaying sign-in page correctly
+- Application functions identically on Vercel as it does on localhost
+- All static files served from public/ folder, API routes working through serverless function
+- Production deployment is complete and fully functional

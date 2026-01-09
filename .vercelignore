@@ -4,6 +4,9 @@ database.db
 
 # Development files
 server.js
+app.js
+index.html
+styles.css
 node_modules/
 
 # Logs
