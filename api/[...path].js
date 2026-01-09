@@ -39,72 +39,58 @@ module.exports = async (req, res) => {
         return res.status(404).json({ error: 'Not found' });
     }
     
-    // Determine file path - Vercel serves from /var/task in serverless
-    // Files are copied to the function directory during build
-    let filePath;
-    const baseDir = process.cwd();
+    // In Vercel, files are in the project root, but we need to go up from api/
+    const baseDir = path.join(__dirname, '..');
     
+    // Determine file path
+    let filePath;
     if (cleanPath === '' || cleanPath === 'index.html' || urlPath === '/') {
         filePath = path.join(baseDir, 'index.html');
     } else {
         filePath = path.join(baseDir, cleanPath);
     }
     
+    console.log('Base directory:', baseDir);
     console.log('Initial file path:', filePath);
     console.log('File exists?', fs.existsSync(filePath));
     
-    // List files in current directory for debugging
+    // List files in base directory for debugging
     try {
         const filesInRoot = fs.readdirSync(baseDir);
-        console.log('Files in root directory:', filesInRoot.filter(f => 
+        console.log('Files in base directory:', filesInRoot.filter(f => 
             !f.startsWith('.') && 
             f !== 'node_modules' && 
             !f.includes('node_modules') &&
             f !== 'api'
         ));
-        
-        // Also check if we're in a subdirectory
-        const parentDir = path.dirname(baseDir);
-        if (fs.existsSync(parentDir)) {
-            const parentFiles = fs.readdirSync(parentDir);
-            console.log('Files in parent directory:', parentFiles.filter(f => 
-                !f.startsWith('.') && 
-                f !== 'node_modules'
-            ));
-        }
     } catch (err) {
-        console.log('Error listing directories:', err.message);
+        console.log('Error listing base directory:', err.message);
     }
     
     // Check if file exists
     if (!fs.existsSync(filePath)) {
         console.log('File not found, falling back to index.html');
-        // For SPA, serve index.html for any non-file route
         filePath = path.join(baseDir, 'index.html');
         console.log('Fallback file path:', filePath);
         console.log('Fallback file exists?', fs.existsSync(filePath));
-        
-        if (!fs.existsSync(filePath)) {
-            // Try alternative locations
-            const altPaths = [
-                path.join(__dirname, '..', 'index.html'),
-                path.join(process.cwd(), 'index.html'),
-                '/var/task/index.html',
-                path.join('/var/task', 'index.html')
-            ];
-            
-            for (const altPath of altPaths) {
-                console.log('Trying alternative path:', altPath);
-                if (fs.existsSync(altPath)) {
-                    filePath = altPath;
-                    console.log('Found file at:', filePath);
-                    break;
-                }
-            }
-        }
     }
     
     try {
+        if (!fs.existsSync(filePath)) {
+            console.error('index.html not found at:', filePath);
+            return res.status(404).json({ 
+                error: 'File not found',
+                debug: {
+                    filePath,
+                    baseDir,
+                    cwd: process.cwd(),
+                    dirname: __dirname,
+                    url: req.url,
+                    cleanPath
+                }
+            });
+        }
+        
         const ext = path.extname(filePath);
         console.log('File extension:', ext);
         console.log('Final file path:', filePath);
@@ -144,16 +130,13 @@ module.exports = async (req, res) => {
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
         console.error('File path attempted:', filePath);
-        console.error('Current working directory:', process.cwd());
-        console.error('__dirname:', __dirname);
         res.status(500).json({ 
             error: 'Internal server error',
             message: error.message,
             filePath: filePath,
+            baseDir: baseDir,
             cwd: process.cwd(),
-            dirname: __dirname,
-            url: req.url,
-            query: req.query
+            dirname: __dirname
         });
     }
 };

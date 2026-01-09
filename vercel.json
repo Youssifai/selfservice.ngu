@@ -8,5 +8,12 @@
       "source": "/(.*)",
       "destination": "/api/[...path].js"
     }
-  ]
+  ],
+  "functions": {
+    "api/[...path].js": {
+      "includeFiles": "**/*.html",
+      "includeFiles": "**/*.css",
+      "includeFiles": "**/*.js"
+    }
+  }
 }
