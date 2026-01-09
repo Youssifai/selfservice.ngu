@@ -2,14 +2,9 @@
 database.db
 *.db
 
-# Development files
+# Development server only
 server.js
 node_modules/
-
-# Root-level frontend files (use public/ folder instead)
-/app.js
-/index.html
-/styles.css
 
 # Logs
 *.log

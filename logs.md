@@ -221,3 +221,11 @@
 - Application functions identically on Vercel as it does on localhost
 - All static files served from public/ folder, API routes working through serverless function
 - Production deployment is complete and fully functional
+
+## Complete Rebuild for Reliable Deployment
+- Simplified .vercelignore to only ignore server.js and node_modules (removed frontend file patterns that were too broad)
+- Kept explicit builds configuration in vercel.json pointing to api/index.js
+- Ensured public/ folder files are NOT ignored and will be deployed
+- Configuration now uses explicit builds + rewrites approach for maximum reliability
+- Static files in public/ are served automatically by Vercel before rewrites apply
+- API routes go to serverless function, all other routes serve index.html for SPA routing
