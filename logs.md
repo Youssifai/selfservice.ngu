@@ -169,3 +169,22 @@
 - Added 2025/SEM1 data:
   - 3 courses (VM 2.1 MDL, ESR 2.1.2 MDL, MMB. 2.1.1 MDL)
   - Final grades: SBA: 112, OSPE: 128
+
+## Git Repository Setup
+- Initialized git repository
+- Added all project files (excluding node_modules and database.db per .gitignore)
+- Created initial commit with all application files
+- Set up remote repository: https://github.com/Youssifai/selfservice.ngu.git
+- Pushed to main branch successfully
+- Repository is now fully synchronized with GitHub
+
+## Vercel Deployment Fix
+- Removed SQLite database dependency (not compatible with Vercel serverless functions)
+- Converted to hardcoded data for 2 users:
+  - youssef.aly.2023 / Sophy2005 (Youssef Aly)
+  - tarnim.ahmed.2023 / Radwan23 (Tarnim Ahmed)
+- Created Vercel-compatible API structure in api/index.js
+- Updated package.json to remove sqlite3 dependency
+- Updated app.js to use relative API URLs for Vercel deployment
+- Created vercel.json configuration for proper routing
+- All grade data is now hardcoded and works without database
