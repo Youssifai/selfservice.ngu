@@ -3,8 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/[...path].js"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
